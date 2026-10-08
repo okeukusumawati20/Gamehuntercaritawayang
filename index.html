@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="su">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Activity Hunter - Basa Sunda</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef3ec;color:#173b2b;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:14px}.head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.title{font-size:22px;font-weight:900}.sub{font-size:13px;color:#68766e}.stats{display:flex;gap:6px;flex-wrap:wrap}.pill{background:#fff;border:1px solid #d9ded7;border-radius:99px;padding:7px 10px;font-size:13px;font-weight:800}
+.map{margin-top:12px;background:linear-gradient(135deg,#eef4df,#f8f0d8);border:1px solid #d9ded7;border-radius:18px;padding:15px}.path{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.node{text-align:center}.dot{width:44px;height:44px;margin:auto;border-radius:50%;display:grid;place-items:center;border:3px solid #fff;background:#d9ddd8;font-weight:900}.active .dot{background:#dcefe4;border-color:#2d6a4f}.done .dot{background:#dfe8d5}.label{font-size:11px;font-weight:800;margin-top:4px}
+.card{margin-top:13px;background:#fffdf8;border:1px solid #d9ded7;border-radius:16px;padding:18px}.tag{display:inline-block;background:#dcefe4;border-radius:99px;padding:5px 8px;font-size:11px;font-weight:800}.card h2{font-size:19px;margin:9px 0 7px}.q{font-size:15px;line-height:1.5;margin:0 0 13px}
+.answers{display:grid;gap:8px}.answer,.btn{width:100%;min-height:45px;border-radius:11px;padding:10px 13px;font:inherit;font-weight:750}.answer{background:#fff;border:1px solid #d9ded7;text-align:left;color:#173b2b}.answer.correct{background:#e2f2e6;border-color:#43805d}.answer.wrong{background:#f6e4e1;border-color:#a95b4e}.answer:disabled{cursor:default}.btn{border:0;background:#2d6a4f;color:#fff;cursor:pointer}.btn.secondary{background:#e8ece7;color:#173b2b}.actions{display:flex;gap:8px;margin-top:12px}.feedback{min-height:26px;margin-top:10px;font-weight:750;line-height:1.4}.center{text-align:center;padding:25px 5px}.emoji{font-size:45px}.score{font-size:32px;font-weight:900;color:#2d6a4f;margin:8px}.note{color:#68766e;line-height:1.5}
+@media(max-width:480px){.path{grid-template-columns:repeat(2,1fr)}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="head">
+<div><div class="title">🧭 Activity Hunter</div><div class="sub">Nyucruk Lacak • Carita Wayang Basa Sunda Kelas XII</div></div>
+<div class="stats"><span class="pill">⭐ <b id="score">0</b></span><span class="pill">❤️ <b id="lives">3</b></span><span class="pill">📍 <b id="level">0</b>/8</span></div>
+</div>
+<div id="screen"></div>
+</div>
+<script>
+const missions=[
+["Jejak Pandawa","Mahabharata","Dina carita wayang Mahabharata, kelompok Pandawa diwangun ku...",["Lima sadulur","Tilu sadulur","Opat sadulur","Genep sadulur"],0,"Pandawa nyaéta lima sadulur: Yudistira, Bima, Arjuna, Nakula, jeung Sadewa."],
+["Watak Tokoh","Mahabharata","Tokoh anu nyekel kana bebeneran jeung tanggung jawab némbongkeun nilai...",["Jujur jeung tanggung jawab","Sombong","Teu paduli","Ngalanggar aturan"],0,"Nilai jujur jeung tanggung jawab penting dina kahirupan."],
+["Jejak Ramayana","Ramayana","Ngabandingkeun dua vérsi carita Ramayana ngalatih kamampuh...",["Ngapalkeun wungkul","Komparasi jeung analisis","Ngagambar wungkul","Maca gancang"],1,"Komparasi jeung analisis mantuan manggihan persamaan jeung bédana carita."],
+["Unsur Carita","Unsur Intrinsik","Mana anu kaasup unsur intrinsik carita?",["Tema","Harga buku","Ukuran kertas","Warna sampul"],0,"Tema kaasup unsur intrinsik carita."],
+["Peta Konsep","Analisis","Cara pikeun némbongkeun hubungan antarunsur carita nyaéta...",["Peta konsep","Daftar hadir","Jadwal piket","Daptar harga"],0,"Peta konsep mantuan ngagambarkeun hubungan antarunsur carita."],
+["Kerja Tim","Nilai Hirup","Dina kagiatan kelompok, sikep anu paling penting nyaéta...",["Silih salahkeun","Kerjasama tim","Gawe sorangan","Teu milu"],1,"Kerjasama tim ngajarkeun gotong royong jeung tanggung jawab."],
+["Maca Kritis","Deep Learning","Ngajelaskeun bukti tina carita pikeun ngarojong pamadegan mangrupa...",["Mikir kritis","Niron","Ngaduga tanpa bukti","Ngahapalkeun"],0,"Mikir kritis merlukeun alesan jeung bukti anu luyu."],
+["Misi Pamungkas","Misi Akhir","Tujuan diajar carita wayang lain ngan ukur apal tokoh, tapi ogé...",["Ngartos eusi jeung nilai kahirupan","Ngahapalkeun ngaran wungkul","Ngitung kaca buku","Ngalakukeun lomba"],0,"Carita wayang bisa jadi sumber pangaweruh, analisis, jeung nilai kahirupan."]
+];
+let i=-1,score=0,lives=3,answered=false;
+const $=s=>document.querySelector(s);
+function stats(){$("#score").textContent=score;$("#lives").textContent=lives;$("#level").textContent=Math.max(0,Math.min(i+1,8))}
+function home(){$("#screen").innerHTML=`<div class="card center"><div class="emoji">🗺️</div><h2>Petualangan Activity Hunter</h2><p class="note">Selesaikeun 8 misi ngeunaan Carita Wayang Basa Sunda. Jawaban leres meunang 100 poin. Anjeun boga 3 nyawa.</p><button class="btn" id="start">▶ Mimiti Maén</button></div>`;$("#start").onclick=start}
+function start(){i=-1;score=0;lives=3;next()}
+function next(){i++;answered=false;if(i>=missions.length){finish();return}stats();const m=missions[i];
+let map=`<div class="map"><div class="path">${missions.map((x,n)=>`<div class="node ${n<i?"done":n===i?"active":""}"><div class="dot">${n<i?"✓":n===i?"📍":"🔒"}</div><div class="label">${n+1}. ${x[0]}</div></div>`).join("")}</div></div>`;
+$("#screen").innerHTML=map+`<div class="card"><span class="tag">${m[1]}</span><h2>${m[0]}</h2><p class="q">${m[2]}</p><div class="answers">${m[3].map((a,n)=>`<button class="answer" data-n="${n}">${String.fromCharCode(65+n)}. ${a}</button>`).join("")}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="btn" id="next" disabled>Jejak Salajengna →</button></div></div>`;
+document.querySelectorAll(".answer").forEach(b=>b.onclick=()=>answer(+b.dataset.n));$("#next").onclick=next}
+function answer(n){if(answered)return;answered=true;const m=missions[i];document.querySelectorAll(".answer").forEach((b,k)=>{b.disabled=true;if(k===m[4])b.classList.add("correct");if(k===n&&n!==m[4])b.classList.add("wrong")});
+if(n===m[4]){score+=100;$("#feedback").textContent="🎉 Leres! +100 poin. "+m[5]}else{lives--;$("#feedback").textContent="💡 Can salah. "+m[5]}
+stats();if(lives<=0){setTimeout(gameover,350);return}$("#next").disabled=false}
+function gameover(){$("#screen").innerHTML=`<div class="card center"><div class="emoji">🌱</div><h2>Nyawa geus béak</h2><p class="note">Tong hariwang. Anjeun bisa nyobaan deui pikeun ningkatkeun skor.</p><div class="score">${score} poin</div><button class="btn" id="retry">↻ Maén Deui</button></div>`;$("#retry").onclick=start}
+function finish(){stats();$("#screen").innerHTML=`<div class="card center"><div class="emoji">🏆</div><h2>Wilujeng! Sadaya misi réngsé!</h2><p class="note">Anjeun parantos ngalengkepan 8 jejak Activity Hunter.</p><div class="score">${score} poin</div><p class="note">${score>=700?"🌟 Pangaweruh kacida saé!":score>=500?"👏 Hasil alus! Teruskeun latihan!":"📚 Hayu balikan deui materi pikeun ningkatkeun skor."}</p><button class="btn" id="again">↻ Main Deui</button></div>`;$("#again").onclick=start}
+home();
+</script>
+</body>
+</html>
